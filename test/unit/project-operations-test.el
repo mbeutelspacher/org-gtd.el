@@ -30,18 +30,19 @@
 
 ;;;; Helper Functions
 
-(defun ogt-create-project-with-task (project-name task-name)
-  "Create project with one task. Return (project-marker . task-id)."
+(defun ogt-create-project-with-task (project-name task-name &optional level)
+  "Create project with one task. Return (project-marker . task-id).
+LEVEL is the project heading's outline level, 1 by default."
   (with-current-buffer (org-gtd--default-file)
     (goto-char (point-max))
-    (insert (format "* %s\n" project-name))
+    (insert (format "%s %s\n" (make-string (or level 1) ?*) project-name))
     (forward-line -1)
     (org-back-to-heading t)
     (let ((project-id (org-id-get-create))
           (project-marker (point-marker)))
       (org-entry-put (point) "ORG_GTD" "Projects")
       (org-end-of-subtree t t)
-      (insert (format "** NEXT %s\n" task-name))
+      (insert (format "%s NEXT %s\n" (make-string (1+ (or level 1)) ?*) task-name))
       (forward-line -1)
       (org-back-to-heading t)
       (let ((task-id (org-id-get-create)))
@@ -194,6 +195,46 @@
       (let ((new-task-id (org-id-get)))
         (assert-equal nil (org-gtd-get-task-dependencies new-task-id))
         (assert-equal nil (org-gtd-get-task-blockers new-task-id))))))
+
+;;;; Nested Project Tests
+
+(defun ogt-assert-task-inside-project (title project-marker)
+  "Assert the heading TITLE is a direct child of the project at PROJECT-MARKER."
+  (with-current-buffer (org-gtd--default-file)
+    (goto-char (point-min))
+    (search-forward title)
+    (org-back-to-heading t)
+    (let ((project-level (org-with-point-at project-marker (org-current-level))))
+      (assert-equal (1+ project-level) (org-current-level))
+      (org-up-heading-safe)
+      (assert-equal (marker-position project-marker) (point)))))
+
+(deftest project-ops/add-successor-stays-inside-nested-project ()
+  "New successor is a child of a project that is not at level 1."
+  (let* ((result (ogt-create-project-with-task "Nested Successor Project" "Predecessor" 2))
+         (project-marker (car result)))
+    (org-with-point-at (org-id-find (cdr result) t)
+      (with-simulated-input "Nested C-q SPC Successor RET"
+        (org-gtd-add-successor--simple-with-context (org-gtd-context-at-point))))
+    (ogt-assert-task-inside-project "Nested Successor" project-marker)))
+
+(deftest project-ops/add-blocker-stays-inside-nested-project ()
+  "New blocker is a child of a project that is not at level 1."
+  (let* ((result (ogt-create-project-with-task "Nested Blocker Project" "Blocked" 2))
+         (project-marker (car result)))
+    (org-with-point-at (org-id-find (cdr result) t)
+      (with-simulated-input "Nested C-q SPC Blocker RET"
+        (org-gtd-add-blocker--simple-with-context (org-gtd-context-at-point))))
+    (ogt-assert-task-inside-project "Nested Blocker" project-marker)))
+
+(deftest project-ops/add-root-stays-inside-nested-project ()
+  "New root task is a child of a project that is not at level 1."
+  (let* ((result (ogt-create-project-with-task "Nested Root Project" "Existing" 2))
+         (project-marker (car result)))
+    (org-with-point-at (org-id-find (cdr result) t)
+      (with-simulated-input "Nested C-q SPC Root RET"
+        (org-gtd-add-root--simple-with-context (org-gtd-context-at-point))))
+    (ogt-assert-task-inside-project "Nested Root" project-marker)))
 
 ;;;; Context Integration Tests
 

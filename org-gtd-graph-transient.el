@@ -258,10 +258,7 @@ ORG_GTD_FIRST_TASKS property."
         ;; Create new task
         (org-with-point-at org-gtd-graph-view--project-marker
           (let ((project-id (org-entry-get (point) "ID")))
-            (org-end-of-subtree t t)
-            (unless (bolp) (insert "\n"))
-            (insert "** " title "\n")
-            (forward-line -1)
+            (org-gtd-project--insert-task-heading title)
             (org-back-to-heading t)
             (setq task-id (org-id-get-create))
             (org-todo "TODO")
@@ -1072,10 +1069,7 @@ Reads from transient scope and prefix object's edge-selection slot."
     ;; Create new task if needed
     (unless new-task-id
       (org-with-point-at project-marker
-        (org-end-of-subtree t t)
-        (unless (bolp) (insert "\n"))
-        (insert "** " task-title "\n")
-        (forward-line -1)
+        (org-gtd-project--insert-task-heading task-title)
         (org-back-to-heading t)
         (setq new-task-id (org-id-get-create))
         (org-todo "TODO")
@@ -1199,10 +1193,7 @@ Reads from transient scope and prefix object's edge-selection slot."
     ;; Create new task if needed
     (unless new-task-id
       (org-with-point-at project-marker
-        (org-end-of-subtree t t)
-        (unless (bolp) (insert "\n"))
-        (insert "** " task-title "\n")
-        (forward-line -1)
+        (org-gtd-project--insert-task-heading task-title)
         (org-back-to-heading t)
         (setq new-task-id (org-id-get-create))
         (org-todo "TODO")
@@ -1244,10 +1235,7 @@ Returns the ID of the newly created task."
         new-task-id)
     ;; Create new task
     (org-with-point-at project-marker
-      (org-end-of-subtree t t)
-      (unless (bolp) (insert "\n"))
-      (insert "** " task-title "\n")
-      (forward-line -1)
+      (org-gtd-project--insert-task-heading task-title)
       (org-back-to-heading t)
       (setq new-task-id (org-id-get-create))
       (org-todo "TODO")
@@ -1277,10 +1265,7 @@ Returns the ID of the newly created task."
         new-task-id)
     ;; Create new task
     (org-with-point-at project-marker
-      (org-end-of-subtree t t)
-      (unless (bolp) (insert "\n"))
-      (insert "** " task-title "\n")
-      (forward-line -1)
+      (org-gtd-project--insert-task-heading task-title)
       (org-back-to-heading t)
       (setq new-task-id (org-id-get-create))
       (org-todo "TODO")
@@ -1312,10 +1297,7 @@ Returns the ID of the newly created task."
         new-task-id)
     ;; Create new task
     (org-with-point-at project-marker
-      (org-end-of-subtree t t)
-      (unless (bolp) (insert "\n"))
-      (insert "** " task-title "\n")
-      (forward-line -1)
+      (org-gtd-project--insert-task-heading task-title)
       (org-back-to-heading t)
       (setq new-task-id (org-id-get-create))
       (org-todo "TODO")

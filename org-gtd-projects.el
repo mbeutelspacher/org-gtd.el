@@ -166,6 +166,17 @@ and cancels child tasks.  If declined, reverts the heading state."
 
 ;;;; Context Helpers
 
+(defun org-gtd-project--insert-task-heading (title)
+  "Insert TITLE as the last child of the project heading at point.
+The new heading is one level below the project, so it stays inside the
+project wherever the project sits in the outline.  Leaves point on the
+new heading."
+  (let ((level (org-get-valid-level (org-current-level) 1)))
+    (org-end-of-subtree t t)
+    (unless (bolp) (insert "\n"))
+    (insert (make-string level ?*) " " title "\n")
+    (forward-line -1)))
+
 (defun org-gtd-project--get-marker-at-point (&optional prompt)
   "Get project marker for task at point.
 If task belongs to multiple projects, prompt user to choose.
